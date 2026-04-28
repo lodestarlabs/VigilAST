@@ -1,4 +1,4 @@
-﻿import astroid
+import astroid
 from astroid.nodes import Import, ImportFrom, Call, Const, Assign, Subscript, AssignAttr, ClassDef
 import argparse
 import os
@@ -337,7 +337,7 @@ def download_and_extract_deps(repo_path, findings_map):
     # Check reputation
     if CHECK_REPUTATION:
         req_findings = []
-        with open(req_file, 'r', encoding='utf-8') as rf:
+        with open(req_file, 'r', encoding='utf-8-sig') as rf:
             for i, line in enumerate(rf):
                 line = line.strip()
                 if line and not line.startswith('#'):
@@ -358,23 +358,26 @@ def download_and_extract_deps(repo_path, findings_map):
     os.makedirs(download_dir)
     os.makedirs(extract_dir)
     
-    cmd = []
     if shutil.which("uv"):
         print("[*] Using 'uv' for dependency resolution and downloading.")
-        cmd = ["uv", "pip", "download", "-d", download_dir, "-r", req_file]
+        base_cmd = ["uv", "pip", "download", "-d", download_dir]
     elif shutil.which("pip"):
         print("[*] Using 'pip' for dependency downloading.")
-        cmd = ["pip", "download", "-d", download_dir, "-r", req_file]
+        base_cmd = ["pip", "download", "-d", download_dir]
     else:
         print("[!] Neither 'uv' nor 'pip' found. Skipping dependency scan.")
         shutil.rmtree(deps_base_dir, ignore_errors=True)
         return None
         
-    try:
-        subprocess.check_call(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    except subprocess.CalledProcessError as e:
-        print(f"[!] Warning: Failed to cleanly download some dependencies: {e}")
-        pass
+    with open(req_file, 'r', encoding='utf-8-sig') as rf:
+        for line in rf:
+            line = line.strip()
+            # Ignore comments, empty lines, and pip flags
+            if line and not line.startswith('#') and not line.startswith('-'):
+                try:
+                    subprocess.check_call(base_cmd + [line], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                except subprocess.CalledProcessError as e:
+                    print(f"[!] Warning: Failed to download dependency '{line}': {e}")
         
     downloads = os.listdir(download_dir)
     if not downloads:

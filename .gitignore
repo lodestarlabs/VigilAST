@@ -183,3 +183,5 @@ cython_debug/
 # VigilAST Mock Sandboxes
 mock_repo/
 *.sarif
+raw_output.txt
+/test_downloads
