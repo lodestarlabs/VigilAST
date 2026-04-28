@@ -185,3 +185,4 @@ mock_repo/
 *.sarif
 raw_output.txt
 /test_downloads
+/temp_downloads
