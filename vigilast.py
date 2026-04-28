@@ -360,7 +360,7 @@ def download_and_extract_deps(repo_path, findings_map):
     
     if shutil.which("uv"):
         print("[*] Using 'uv' for dependency resolution and downloading.")
-        base_cmd = ["uv", "pip", "download", "-d", download_dir]
+        base_cmd = ["uv", "run", "pip", "download", "-d", download_dir]
     elif shutil.which("pip"):
         print("[*] Using 'pip' for dependency downloading.")
         base_cmd = ["pip", "download", "-d", download_dir]
